@@ -20,9 +20,11 @@ public class MemberRepository {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     private static final String TABLE_NAME = "MEMBER";
+    private static final String FIND_SQL = String.format("SELECT * FROM %s WHERE id = :id", TABLE_NAME);
+    private static final String UPDATE_SQL = String.format(
+            "UPDATE %s SET email = :email, nickname = :nickname, birthday = :birthday WHERE id = :id", TABLE_NAME);
 
     public Optional<Member> findById(Long id) {
-        String sql = String.format("SELECT * FROM %s WHERE id = :id", TABLE_NAME);
         var param = new MapSqlParameterSource()
                 .addValue("id", id);
         RowMapper<Member> rowMapper = (ResultSet resultSet, int rowNum) -> Member.builder()
@@ -33,7 +35,7 @@ public class MemberRepository {
                 .createdAt(resultSet.getObject("createdAt", LocalDateTime.class))
                 .build();
 
-        var member = namedParameterJdbcTemplate.queryForObject(sql, param, rowMapper);
+        var member = namedParameterJdbcTemplate.queryForObject(FIND_SQL, param, rowMapper);
         return Optional.ofNullable(member);
     }
 
@@ -61,7 +63,8 @@ public class MemberRepository {
     }
 
     private Member update(Member member) {
-        // TODO : 업데이트 구현
+        SqlParameterSource params = new BeanPropertySqlParameterSource(member);
+        namedParameterJdbcTemplate.update(UPDATE_SQL, params);
         return member;
     }
 }

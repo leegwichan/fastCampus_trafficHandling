@@ -9,7 +9,7 @@ create table Member
         primary key (id)
 );
 
-create table MemberNicknameHistory
+create table Member_Nickname_History
 (
     id int auto_increment,
     memberId int not null,
