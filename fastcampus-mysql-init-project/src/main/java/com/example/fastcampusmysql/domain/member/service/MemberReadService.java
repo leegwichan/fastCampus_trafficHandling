@@ -19,6 +19,10 @@ public class MemberReadService {
         return memberRepository.findById(memberId).orElseThrow();
     }
 
+    public List<Member> getMembers(List<Long> memberIds) {
+        return memberRepository.findAllByIdIn(memberIds);
+    }
+
     public List<MemberNicknameHistory> getMemberNameHistories(Long memberId) {
         return memberNameHistoryRepository.findAllByMemberId(memberId);
     }
