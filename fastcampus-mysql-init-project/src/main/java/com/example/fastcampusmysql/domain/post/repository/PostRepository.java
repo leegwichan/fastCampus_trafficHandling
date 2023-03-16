@@ -22,14 +22,14 @@ public class PostRepository {
     private static final RowMapper<DailyPostCount> DAILY_POST_COUNT_MAPPER = (ResultSet resultSet, int rowNum) ->
             new DailyPostCount(
                     resultSet.getLong("memberId"),
-                    resultSet.getObject("createdAt", LocalDate.class),
+                    resultSet.getObject("createdDate", LocalDate.class),
                     resultSet.getLong("count")
             );
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     public List<DailyPostCount> groupByCreateDate(DailyPostCountRequest request) {
-        String sql = String.format("SELECT createdAt, memberId, count(id) AS count FROM %s " +
+        String sql = String.format("SELECT createdDate, memberId, count(id) AS count FROM %s " +
                 "WHERE memberId = :memberId and createdDate between :firstDate and :lastDate " +
                 "GROUP BY createdDate, memberId", TABLE_NAME);
 
