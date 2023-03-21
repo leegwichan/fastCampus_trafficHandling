@@ -4,6 +4,8 @@ import com.example.fastcampusmysql.domain.post.dto.DailyPostCount;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCountRequest;
 import com.example.fastcampusmysql.domain.post.entity.Post;
 import com.example.fastcampusmysql.domain.post.repository.PostRepository;
+import com.example.fastcampusmysql.util.repository.CursorRequest;
+import com.example.fastcampusmysql.util.repository.PageCursor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +39,21 @@ public class PostReadService {
         }
         return postRepository.findAllByMemberIdAndOrderByIdDesc(memberId, request.getSize());
     }
+
+    public PageCursor<Post> getPosts(List<Long> memberIds, CursorRequest request) {
+        List<Post> posts = findAllBy(memberIds, request);
+        Long nextKey = getNextKey(posts);
+
+        return new PageCursor<>(request.next(nextKey), posts);
+    }
+
+    private List<Post> findAllBy(List<Long> memberIds, CursorRequest request) {
+        if (request.isHasKey()) {
+            return postRepository.findAllByLessThanIdAndInMemberIdAndOrderByIdDesc(request.getKey(), memberIds, request.getSize());
+        }
+        return postRepository.findAllByInMemberIdAndOrderByIdDesc(memberIds, request.getSize());
+    }
+
     private Long getNextKey(List<Post> posts) {
         return posts.stream()
                 .mapToLong(Post::getId)
