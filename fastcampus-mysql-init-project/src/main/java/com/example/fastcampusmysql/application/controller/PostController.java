@@ -1,5 +1,6 @@
 package com.example.fastcampusmysql.application.controller;
 
+import com.example.fastcampusmysql.application.usacase.CreatePostUsecase;
 import com.example.fastcampusmysql.application.usacase.GetTimelinePostUsecase;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCount;
 import com.example.fastcampusmysql.domain.post.dto.DailyPostCountRequest;
@@ -8,7 +9,6 @@ import com.example.fastcampusmysql.domain.post.dto.PostDto;
 import com.example.fastcampusmysql.domain.post.entity.Post;
 import com.example.fastcampusmysql.domain.post.mapper.PostMapper;
 import com.example.fastcampusmysql.domain.post.service.PostReadService;
-import com.example.fastcampusmysql.domain.post.service.PostWriteService;
 import com.example.fastcampusmysql.util.repository.CursorRequest;
 import com.example.fastcampusmysql.util.repository.PageCursor;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +29,9 @@ import java.util.List;
 public class PostController {
 
     private final PostMapper mapper;
-    private final PostWriteService postWriteService;
     private final PostReadService postReadService;
     private final GetTimelinePostUsecase getTimelinePostUsecase;
+    private final CreatePostUsecase createPostUsecase;
 
     @GetMapping("/members/{memberId}")
     public Page<Post> getPosts(@PathVariable Long memberId,
@@ -62,7 +62,7 @@ public class PostController {
     @PostMapping
     public PostDto post(@RequestBody PostCommand command) {
         Post post = mapper.toEntity(command);
-        Post savePost = postWriteService.save(post);
+        Post savePost = createPostUsecase.execute(post);
         return mapper.toDto(savePost);
     }
 }
