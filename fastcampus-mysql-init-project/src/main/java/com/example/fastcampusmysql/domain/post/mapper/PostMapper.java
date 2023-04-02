@@ -20,6 +20,7 @@ public class PostMapper {
                 .memberId(post.getMemberId())
                 .contents(post.getContents())
                 .createdDate(post.getCreatedDate())
+                .likeCount(post.getLikeCount())
                 .build();
     }
 }

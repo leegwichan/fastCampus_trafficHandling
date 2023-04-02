@@ -13,4 +13,5 @@ public class PostDto {
     private Long memberId;
     private String contents;
     private LocalDate createdDate;
+    private Long likeCount;
 }

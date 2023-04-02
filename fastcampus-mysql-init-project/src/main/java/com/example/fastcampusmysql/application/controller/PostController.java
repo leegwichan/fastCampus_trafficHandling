@@ -9,6 +9,7 @@ import com.example.fastcampusmysql.domain.post.dto.PostDto;
 import com.example.fastcampusmysql.domain.post.entity.Post;
 import com.example.fastcampusmysql.domain.post.mapper.PostMapper;
 import com.example.fastcampusmysql.domain.post.service.PostReadService;
+import com.example.fastcampusmysql.domain.post.service.PostWriteService;
 import com.example.fastcampusmysql.util.repository.CursorRequest;
 import com.example.fastcampusmysql.util.repository.PageCursor;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class PostController {
 
     private final PostMapper mapper;
     private final PostReadService postReadService;
+    private final PostWriteService postWriteService;
     private final GetTimelinePostUsecase getTimelinePostUsecase;
     private final CreatePostUsecase createPostUsecase;
 
@@ -64,5 +66,11 @@ public class PostController {
         Post post = mapper.toEntity(command);
         Post savePost = createPostUsecase.execute(post);
         return mapper.toDto(savePost);
+    }
+
+    @PostMapping("/{postId}/like")
+    public PostDto like(@PathVariable Long postId) {
+        Post post = postWriteService.like(postId);
+        return mapper.toDto(post);
     }
 }

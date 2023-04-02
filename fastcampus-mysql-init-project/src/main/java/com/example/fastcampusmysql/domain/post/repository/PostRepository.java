@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Repository
@@ -26,11 +27,13 @@ public class PostRepository {
 
     private static final String TABLE_NAME = "POST";
     private static final RowMapper<Post> POST_MAPPER = (ResultSet resultset, int rowNum) -> Post.builder()
-                    .id(resultset.getLong("id"))
-                    .memberId(resultset.getLong("memberId"))
-                    .contents(resultset.getString("contents"))
-                    .createdDate(resultset.getObject("createdDate", LocalDate.class))
-                    .createdAt(resultset.getObject("createdAt", LocalDateTime.class)).build();
+            .id(resultset.getLong("id"))
+            .memberId(resultset.getLong("memberId"))
+            .contents(resultset.getString("contents"))
+            .likeCount(resultset.getLong("likeCount"))
+            .version(resultset.getLong("version"))
+            .createdDate(resultset.getObject("createdDate", LocalDate.class))
+            .createdAt(resultset.getObject("createdAt", LocalDateTime.class)).build();
     private static final RowMapper<DailyPostCount> DAILY_POST_COUNT_MAPPER = (ResultSet resultSet, int rowNum) ->
             new DailyPostCount(
                     resultSet.getLong("memberId"),
@@ -40,6 +43,17 @@ public class PostRepository {
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
+    public Optional<Post> findById(Long postId, Boolean requiredLock) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("postId", postId);
+        String sql = String.format("SELECT * FROM %s WHERE id = :postId", TABLE_NAME);
+        if (requiredLock) {
+            sql += "FOR UPDATE";
+        }
+
+        Post post = namedParameterJdbcTemplate.queryForObject(sql, params, POST_MAPPER);
+        return Optional.ofNullable(post);
+    }
     public List<DailyPostCount> groupByCreateDate(DailyPostCountRequest request) {
         String sql = String.format("SELECT createdDate, memberId, count(id) AS count FROM %s " +
                 "WHERE memberId = :memberId and createdDate between :firstDate and :lastDate " +
@@ -132,7 +146,7 @@ public class PostRepository {
         if (post.getId() == null) {
             return insert(post);
         }
-        throw new UnsupportedOperationException("Post 는 갱신을 지원하지 않습니다.");
+        return update(post);
     }
 
     private Post insert(Post post) {
@@ -152,9 +166,19 @@ public class PostRepository {
                 .build();
     }
 
+    private Post update(Post post) {
+        SqlParameterSource params = new BeanPropertySqlParameterSource(post);
+        String sql = String.format(
+                "UPDATE %s SET memberId = :memberId, contents = :contents, likeCount = :likeCount,\n"
+                        + "version = :version + 1\n"
+                        + "WHERE id = :id", TABLE_NAME);
+        namedParameterJdbcTemplate.update(sql, params);
+        return post;
+    }
+
     public void bulkInsert(List<Post> posts) {
-        var sql = String.format(" INSERT INTO `%s` (memberId, contents, createdDate, createdAt) " +
-                "VALUES (:memberId, :contents, :createdDate, :createdAt)", TABLE_NAME);
+        var sql = String.format(" INSERT INTO `%s` (memberId, contents, createdDate, createdAt, version) " +
+                "VALUES (:memberId, :contents, :createdDate, :createdAt, :version)", TABLE_NAME);
 
         SqlParameterSource[] params = posts
                 .stream()
