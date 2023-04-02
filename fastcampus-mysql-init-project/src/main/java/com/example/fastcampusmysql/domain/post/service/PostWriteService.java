@@ -16,9 +16,20 @@ public class PostWriteService {
         return postRepository.save(post);
     }
 
+//    // 비관적 Lock 구현
+//    @Transactional
+//    public Post like(Long postId) {
+//        Post post = postRepository.findById(postId, true)
+//                .orElseThrow(() -> new IllegalArgumentException("해당 게시물이 없습니다."));
+//
+//        post.like();
+//        return postRepository.save(post);
+//    }
+
+    // Optimistic Lock 방법 구현 (repository 에서 version 구현)
     @Transactional
     public Post like(Long postId) {
-        Post post = postRepository.findById(postId, true)
+        Post post = postRepository.findById(postId, false)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시물이 없습니다."));
 
         post.like();

@@ -172,7 +172,12 @@ public class PostRepository {
                 "UPDATE %s SET memberId = :memberId, contents = :contents, likeCount = :likeCount,\n"
                         + "version = :version + 1\n"
                         + "WHERE id = :id", TABLE_NAME);
-        namedParameterJdbcTemplate.update(sql, params);
+
+        int status = namedParameterJdbcTemplate.update(sql, params);
+        if (status == 0) {
+            throw new RuntimeException("갱신 실패");
+        }
+
         return post;
     }
 
