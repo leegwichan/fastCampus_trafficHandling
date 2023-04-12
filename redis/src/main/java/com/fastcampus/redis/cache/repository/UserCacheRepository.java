@@ -1,7 +1,7 @@
 package com.fastcampus.redis.cache.repository;
 
 import com.fastcampus.redis.cache.dto.UserProfile;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Repository;
@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Repository
-@RequiredArgsConstructor
 public class UserCacheRepository {
 
     private static final String NAME_KEY_PREFIX = "name_";
@@ -17,7 +16,13 @@ public class UserCacheRepository {
     private static final int TIMEOUT = 5;
 
     private final RedisTemplate<String, String> redisTemplate;
-    private ValueOperations<String, String> ops = redisTemplate.opsForValue();
+    private final ValueOperations<String, String> ops;
+
+    @Autowired
+    public UserCacheRepository(RedisTemplate<String, String> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+        this.ops = redisTemplate.opsForValue();
+    }
 
     public Optional<UserProfile> findById(long id) {
         String name = ops.get(NAME_KEY_PREFIX + id);
