@@ -31,6 +31,6 @@ public class RankingService {
         ZSetOperations zSetOps = redisTemplate.opsForZSet();
         Set<String> rangeSet = zSetOps.reverseRange(LEADER_BOARD_KEY, 0, limit-1);
 
-        return rangeSet.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        return rangeSet.stream().collect(Collectors.toList());
     }
 }
