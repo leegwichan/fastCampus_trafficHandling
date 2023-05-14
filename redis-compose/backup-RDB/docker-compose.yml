@@ -3,10 +3,10 @@ version: '3'
 services:
   my-redis:
     hostname: my-redis
-    container_name: my-redis
+    container_name: my-redis-rdb
     image: "redis"
     ports:
       - 6379:6379
-    command: redis-server /usr/local/etc/redis/redis.conf
     volumes:
-      - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+          - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
